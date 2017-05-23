@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {"id": "Alice", "group": 1},
+
+    {"id": "Bob", "group": 1},
+    {"id": "Charlie", "group": 1},
+    {"id": "David", "group": 1},
+    {"id": "Eve", "group": 1},
+    {"id": "Frank", "group": 1},
+
+    {"id": "hash_T1", "group": 2},
+    {"id": "hash_T2", "group": 2},
+    {"id": "hash_T3", "group": 2},
+    {"id": "hash_T4", "group": 2},
+    {"id": "hash_T5", "group": 2},
+    {"id": "hash_T6", "group": 2}
+  ],
+  "links": [
+    {"source": "Alice", "target": "hash_T1", "value": 1},
+    {"source": "hash_T1", "target": "Bob", "value": 1},
+    {"source": "Alice", "target": "hash_T2", "value": 8},
+    {"source": "hash_T2", "target": "Charlie", "value": 10},
+    {"source": "Eve", "target": "hash_T3", "value": 6},
+    {"source": "hash_T3", "target": "Alice", "value": 1},
+    {"source": "David", "target": "hash_T4", "value": 6},
+    {"source": "hash_T4", "target": "Alice", "value": 1},
+    {"source": "Bob", "target": "hash_T5", "value": 10},
+    {"source": "hash_T5", "target": "Frank", "value": 6},
+    {"source": "Charlie", "target": "hash_T6", "value": 10}
+  ]
+}
