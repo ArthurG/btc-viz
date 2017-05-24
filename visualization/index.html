@@ -46,13 +46,26 @@ d3.json("miserables.json", function(error, graph) {
   simulation.force("link")
       .links(graph.links);
 
-
+  // build the arrow.
+  svg.append("svg:defs").selectAll("marker")
+    .data(["end"])      // Different link/path types can be defined here
+  .enter().append("svg:marker")    // This section adds in the arrows
+    .attr("id", String)
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 15)
+    .attr("refY", -1.5)
+    .attr("markerWidth", 6)
+    .attr("markerHeight", 6)
+    .attr("orient", "auto")
+  .append("svg:path")
+    .attr("d", "M0,-5L10,0L0,5");
 
   var link = svg.selectAll(".link")
     .data(graph.links)
     .enter().append("line")
       .attr("class", "link")
-      .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+      .attr("stroke-width", function(d) { return Math.sqrt(d.value); })
+      .attr("marker-end", "url(#end)");
 
   var node = svg.selectAll(".node")
     .data(graph.nodes)
@@ -61,16 +74,13 @@ d3.json("miserables.json", function(error, graph) {
       .call(d3.drag().on("start", dragstarted)
         .on("drag", dragged)
         .on("end", dragended));
+  node.append("circle")
+      .attr("r", 10)
+      .attr("fill", function(d) { return color(d.group); });
 
-  node.append("image")
-      .attr("xlink:href", "https://github.com/favicon.ico")
-      .attr("x", -8)
-      .attr("y", -8)
-      .attr("width", 16)
-      .attr("height", 16);
   node.append("text")
       .attr("dx", 12)
-      .text(function(d) { return "lolcats" });
+      .text(function(d) { return d.id });
 
   node.append("title")
       .text(function(d) { return d.id; });

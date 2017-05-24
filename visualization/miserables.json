@@ -1,19 +1,18 @@
 {
   "nodes": [
-    {"id": "Alice", "group": 1},
+    {"id": "Alice","type": "wallet", "group": 1},
+    {"id": "Bob","type": "wallet", "group": 1},
+    {"id": "Charlie","type": "wallet", "group": 1},
+    {"id": "David","type": "wallet", "group": 1},
+    {"id": "Eve","type": "wallet", "group": 1},
+    {"id": "Frank","type": "wallet", "group": 1},
 
-    {"id": "Bob", "group": 1},
-    {"id": "Charlie", "group": 1},
-    {"id": "David", "group": 1},
-    {"id": "Eve", "group": 1},
-    {"id": "Frank", "group": 1},
-
-    {"id": "hash_T1", "group": 2},
-    {"id": "hash_T2", "group": 2},
-    {"id": "hash_T3", "group": 2},
-    {"id": "hash_T4", "group": 2},
-    {"id": "hash_T5", "group": 2},
-    {"id": "hash_T6", "group": 2}
+    {"id": "hash_T1","type": "transaction", "group": 2},
+    {"id": "hash_T2", "type": "transaction", "group": 2},
+    {"id": "hash_T3", "type": "transaction", "group": 2},
+    {"id": "hash_T4", "type": "transaction", "group": 2},
+    {"id": "hash_T5", "type": "transaction", "group": 2},
+    {"id": "hash_T6", "type": "transaction", "group": 2}
   ],
   "links": [
     {"source": "Alice", "target": "hash_T1", "value": 1},
