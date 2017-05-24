@@ -1,117 +1,179 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<style>
+
+<html lang="en">
+
+  <head>
+     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+      <!-- Optional theme -->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+       <title>Starter Template for Bootstrap</title>
+
+  
+      <meta charset="utf-8">
+      <style>
+        <!- Bootstrap ->
+        body {
+          padding-top: 50px;
+        }
+        .starter-template {
+          padding: 40px 15px;
+          text-align: center;
+        }
 
 
 
-.link {
-  stroke: #999;
-  stroke-opacity: 0.6;
-}
 
-.nodes circle {
-  stroke: #fff;
-  stroke-width: 1.5px;
-}
+      .link {
+        stroke: #999;
+        stroke-opacity: 0.6;
+      }
 
-.node text {
-  pointer-events: none;
-  font: 10px sans-serif;
-}
+      .nodes circle {
+        stroke: #fff;
+        stroke-width: 1.5px;
+      }
 
-</style>
-<svg width="960" height="600"></svg>
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<script>
+      .node text {
+        pointer-events: none;
+        font: 10px sans-serif;
+      }
 
-var svg = d3.select("svg"),
-    width = +svg.attr("width"),
-    height = +svg.attr("height");
+      </style>
+  </head>
 
-var color = d3.scaleOrdinal(d3.schemeCategory20);
+  <body>
 
-var simulation = d3.forceSimulation()
-    .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(function(d){ return 150;}))
-    .force("charge", d3.forceManyBody())
-    .force("center", d3.forceCenter(width / 2, height / 2));
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Project name</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
 
-d3.json("miserables.json", function(error, graph) {
-  if (error) throw error;
+    <div class="container">
+
+      <div class="starter-template">
+        <h1>Bootstrap starter template</h1>
+        <p class="lead">Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.</p>
+
+        <svg width="960" height="600"></svg>
+      </div>
+
+    </div><!-- /.container -->
 
 
-  simulation
-      .nodes(graph.nodes)
-      .on("tick", ticked);
 
-  simulation.force("link")
-      .links(graph.links);
 
-  // build the arrow.
-  svg.append("svg:defs").selectAll("marker")
-    .data(["end"])      // Different link/path types can be defined here
-  .enter().append("svg:marker")    // This section adds in the arrows
-    .attr("id", String)
-    .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 15)
-    .attr("refY", -1.5)
-    .attr("markerWidth", 6)
-    .attr("markerHeight", 6)
-    .attr("orient", "auto")
-  .append("svg:path")
-    .attr("d", "M0,-5L10,0L0,5");
 
-  var link = svg.selectAll(".link")
-    .data(graph.links)
-    .enter().append("line")
-      .attr("class", "link")
-      .attr("stroke-width", function(d) { return Math.sqrt(d.value); })
-      .attr("marker-end", "url(#end)");
 
-  var node = svg.selectAll(".node")
-    .data(graph.nodes)
-    .enter().append("svg:g")
-      .attr("class", "node")
-      .call(d3.drag().on("start", dragstarted)
-        .on("drag", dragged)
-        .on("end", dragended));
-  node.append("circle")
-      .attr("r", 10)
-      .attr("fill", function(d) { return color(d.group); });
+      <script src="https://d3js.org/d3.v4.min.js"></script>
+      <script>
 
-  node.append("text")
-      .attr("dx", 12)
-      .text(function(d) { return d.id });
+      var svg = d3.select("svg"),
+          width = +svg.attr("width"),
+          height = +svg.attr("height");
 
-  node.append("title")
-      .text(function(d) { return d.id; });
+      var color = d3.scaleOrdinal(d3.schemeCategory20);
 
-  function ticked() {
-    link
-        .attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
+      var simulation = d3.forceSimulation()
+          .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(function(d){ return 150;}))
+          .force("charge", d3.forceManyBody())
+          .force("center", d3.forceCenter(width / 2, height / 2));
 
-    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-  }
-});
+      d3.json("miserables.json", function(error, graph) {
+        if (error) throw error;
 
-function dragstarted(d) {
-  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-  d.fx = d.x;
-  d.fy = d.y;
-}
 
-function dragged(d) {
-  d.fx = d3.event.x;
-  d.fy = d3.event.y;
-}
+        simulation
+            .nodes(graph.nodes)
+            .on("tick", ticked);
 
-function dragended(d) {
-  if (!d3.event.active) simulation.alphaTarget(0);
-  d.fx = null;
-  d.fy = null;
-}
+        simulation.force("link")
+            .links(graph.links);
 
-</script>
+        // build the arrow.
+        svg.append("svg:defs").selectAll("marker")
+          .data(["end"])      // Different link/path types can be defined here
+        .enter().append("svg:marker")    // This section adds in the arrows
+          .attr("id", String)
+          .attr("viewBox", "0 -5 10 10")
+          .attr("refX", 15)
+          .attr("refY", -1.5)
+          .attr("markerWidth", 6)
+          .attr("markerHeight", 6)
+          .attr("orient", "auto")
+        .append("svg:path")
+          .attr("d", "M0,-5L10,0L0,5");
 
+        var link = svg.selectAll(".link")
+          .data(graph.links)
+          .enter().append("line")
+            .attr("class", "link")
+            .attr("stroke-width", function(d) { return Math.sqrt(d.value); })
+            .attr("marker-end", "url(#end)");
+
+        var node = svg.selectAll(".node")
+          .data(graph.nodes)
+          .enter().append("svg:g")
+            .attr("class", "node")
+            .call(d3.drag().on("start", dragstarted)
+              .on("drag", dragged)
+              .on("end", dragended));
+        node.append("circle")
+            .attr("r", 10)
+            .attr("fill", function(d) { return color(d.group); });
+
+        node.append("text")
+            .attr("dx", 12)
+            .text(function(d) { return d.id });
+
+        node.append("title")
+            .text(function(d) { return d.id; });
+
+        function ticked() {
+          link
+              .attr("x1", function(d) { return d.source.x; })
+              .attr("y1", function(d) { return d.source.y; })
+              .attr("x2", function(d) { return d.target.x; })
+              .attr("y2", function(d) { return d.target.y; });
+
+          node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+        }
+      });
+
+      function dragstarted(d) {
+        if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      }
+
+      function dragged(d) {
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+      }
+
+      function dragended(d) {
+        if (!d3.event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+      }
+
+      </script>
+
+  </body>
+</html>
