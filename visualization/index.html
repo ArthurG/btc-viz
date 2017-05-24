@@ -71,6 +71,24 @@
         <h1>Bootstrap starter template</h1>
         <p class="lead">Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.</p>
 
+        
+
+    <form id="submit_address">
+        <div class="form-inline">
+            <div class="row">
+              <div class="form-group">
+                <input type="text" class="form-control" id="inputAddress" placeholder="BTC address">
+              </div>
+              <div class="form-group">
+                <button type="submit" class="btn btn-primary">Search</button>
+              </div>
+            </div>
+ 
+        </div>
+    </form>
+
+
+
         <svg width="960" height="600"></svg>
       </div>
 
@@ -82,8 +100,19 @@
 
 
       <script src="https://d3js.org/d3.v4.min.js"></script>
+
+      <!-- jQuery library -->
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
       <script>
 
+      //JQuery related
+      $("#submit_address").submit(function(e){
+         //Do some clever ajax calls
+         alert($("#inputAddress").val());
+         e.preventDefault();
+      });
+
+      //D3 related
       var svg = d3.select("svg"),
           width = +svg.attr("width"),
           height = +svg.attr("height");
