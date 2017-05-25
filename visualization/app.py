@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 
 from neo4j.v1 import GraphDatabase, basic_auth
+import json
 
 app = Flask(__name__)
 
@@ -29,13 +30,14 @@ def get_json():
         node_e = {"id": str(idx) + "e" + str(record["e"].id), "type": "wallet", "group": 1, "address": record["e"]["address"] }
         nodes.extend([node_a, node_b, node_c, node_d, node_e])
 
-        link_r1 = {"source": 
-
+        link_r1 = {"source": str(idx) + "a" + str(record["a"].id), "target": str(idx) + "b" + str(record["b"].id), "value": record["r1"]["satoshi"]}
+        link_r2 = {"source": str(idx) + "b" + str(record["b"].id), "target": str(idx) + "c" + str(record["c"].id), "value": record["r2"]["satoshi"]}
+        link_r3 = {"source": str(idx) + "c" + str(record["c"].id), "target": str(idx) + "d" + str(record["d"].id), "value": record["r3"]["satoshi"]}
+        link_r4 = {"source": str(idx) + "d" + str(record["d"].id), "target": str(idx) + "e" + str(record["e"].id), "value": record["r4"]["satoshi"]}
+        links.extend([link_r1, link_r2, link_r3, link_r4])
     session.close()
 
-
-
-    return render_template('miserables.json')
+    return json.dumps({"nodes": nodes, "links": links})
 
 
 
