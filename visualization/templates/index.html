@@ -169,10 +169,10 @@
 
         node.append("text")
             .attr("dx", 12)
-            .text(function(d) { return d.id });
+            .text(function(d) { return d.type === "wallet" ? d.address : d.hash; });
 
         node.append("title")
-            .text(function(d) { return d.id; });
+            .text(function(d) { return d.type === "wallet" ? d.address : d.hash; });
 
         function ticked() {
           link
