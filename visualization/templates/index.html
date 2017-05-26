@@ -105,10 +105,10 @@
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
       <script>
 
-      //JQuery related
+      //Handle the search button
       $("#submit_address").submit(function(e){
-         //Do some clever ajax calls
-         alert($("#inputAddress").val());
+         var addrCurious = $("#inputAddress").val();
+         d3.json("miserables.json?wallet="+addrCurious, render);
          e.preventDefault();
       });
 
@@ -124,7 +124,7 @@
           .force("charge", d3.forceManyBody())
           .force("center", d3.forceCenter(width / 2, height / 2));
 
-      d3.json("miserables.json", function(error, graph) {
+      function render(error, graph) {
         if (error) throw error;
 
 
@@ -148,6 +148,10 @@
           .attr("orient", "auto")
         .append("svg:path")
           .attr("d", "M0,-5L10,0L0,5");
+
+        //Delete old stuff
+        svg.selectAll('.link').remove()
+        svg.selectAll('.node').remove()
 
         var link = svg.selectAll(".link")
           .data(graph.links)
@@ -183,7 +187,7 @@
 
           node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
         }
-      });
+      }
 
       function dragstarted(d) {
         if (!d3.event.active) simulation.alphaTarget(0.3).restart();
