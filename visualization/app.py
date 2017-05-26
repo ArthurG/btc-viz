@@ -10,7 +10,7 @@ app = Flask(__name__)
 def main():
     return render_template('index.html')
 
-@app.route("/miserables.json")
+@app.route("/get_neighbour_wallet")
 def get_json():
     wallet_curious = request.args.get("wallet")
     print(wallet_curious)
@@ -49,7 +49,7 @@ def get_json():
         links.extend([link_r1, link_r2, link_r3, link_r4])
  
     session.close()
-    return json.dumps({"nodes": list(nodes), "links": links})
+    return json.dumps({"nodes": nodes, "links": links})
 
 
 

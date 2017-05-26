@@ -108,7 +108,7 @@
       //Handle the search button
       $("#submit_address").submit(function(e){
          var addrCurious = $("#inputAddress").val();
-         d3.json("miserables.json?wallet="+addrCurious, render);
+         d3.json("get_neighbour_wallet?wallet="+addrCurious, render);
          e.preventDefault();
       });
 
