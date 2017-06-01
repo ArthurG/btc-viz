@@ -42,10 +42,10 @@ def get_json():
         if (node_e not in nodes):
             nodes.append(node_e)
 
-        link_r1 = {"source": node_a["id"], "target": node_b["id"], "value": math.log(int(record["r1"]["satoshi"]))}
-        link_r2 = {"source": node_b["id"], "target": node_c["id"], "value": math.log(int(record["r2"]["satoshi"]))}
-        link_r3 = {"source": node_c["id"], "target": node_d["id"], "value": math.log(int(record["r3"]["satoshi"]))}
-        link_r4 = {"source": node_d["id"], "target": node_e["id"], "value": math.log(int(record["r4"]["satoshi"]))}
+        link_r1 = {"source": node_a["id"], "target": node_b["id"], "value": int(record["r1"]["satoshi"])}
+        link_r2 = {"source": node_b["id"], "target": node_c["id"], "value": int(record["r2"]["satoshi"])}
+        link_r3 = {"source": node_c["id"], "target": node_d["id"], "value": int(record["r3"]["satoshi"])}
+        link_r4 = {"source": node_d["id"], "target": node_e["id"], "value": int(record["r4"]["satoshi"])}
 
         if (link_r1 not in links):
             links.append(link_r1)
