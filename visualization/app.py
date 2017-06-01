@@ -46,8 +46,16 @@ def get_json():
         link_r2 = {"source": node_b["id"], "target": node_c["id"], "value": math.log(int(record["r2"]["satoshi"]))}
         link_r3 = {"source": node_c["id"], "target": node_d["id"], "value": math.log(int(record["r3"]["satoshi"]))}
         link_r4 = {"source": node_d["id"], "target": node_e["id"], "value": math.log(int(record["r4"]["satoshi"]))}
-        links.extend([link_r1, link_r2, link_r3, link_r4])
- 
+
+        if (link_r1 not in links):
+            links.append(link_r1)
+        if (link_r2 not in links):
+            links.append(link_r2)
+        if (link_r3 not in links):
+            links.append(link_r3)
+        if (link_r4 not in links):
+            links.append(link_r4)
+
     session.close()
     return json.dumps({"nodes": nodes, "links": links})
 
