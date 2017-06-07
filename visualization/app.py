@@ -38,7 +38,7 @@ return a,r1,b,r2,c,r3,d,r4,e
                 nodes.append(node_b)
 
         if (record["c"] != None):
-            node_c = {"id": record["c"].id, "type": "wallet", "group": 1, "address": record["c"]["address"] }
+            node_c = {"id": record["c"].id, "type": "wallet", "group": 3, "address": record["c"]["address"] }
             if (node_c not in nodes):
                 nodes.append(node_c)
 
