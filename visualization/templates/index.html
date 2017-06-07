@@ -157,7 +157,7 @@
           .data(graph.links)
           .enter().append("line")
             .attr("class", "link")
-            .attr("stroke-width", function(d) { return Math.sqrt(d.value); })
+            .attr("stroke-width", function(d) { return Math.log(Math.log(d.value)); })
             .attr("marker-end", "url(#end)");
 
         var node = svg.selectAll(".node")
