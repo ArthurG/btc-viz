@@ -176,6 +176,17 @@
         node.append("title")
             .text(function(d) { return d.type === "wallet" ? d.address : d.hash; });
 
+        node.on('click', function(d, i){
+            if(d.type === "transaction"){
+                let  id = d.hash;
+                //some ajax call
+            }
+            if(d.type === "wallet"){
+                let  id = d.address;
+                //some ajax call
+            }
+        });
+
         function ticked() {
           link.attr("d", function(d) {
               var dx = d.target.x - d.source.x,
