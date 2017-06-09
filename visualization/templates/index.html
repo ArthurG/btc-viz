@@ -97,16 +97,11 @@
       <!-- jQuery library -->
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
       <script>
-
-        //Variables
-        var graph;
-        var node = svg.selectAll(".node");
-        var link = svg.selectAll(".link")
-
         //Styling and maximum prettiness
         var svg = d3.select("svg"),
             width = +svg.attr("width"),
             height = +svg.attr("height");
+
 
         var color = d3.scaleOrdinal(d3.schemeCategory20);
 
@@ -130,6 +125,10 @@
         .append("svg:path")
           .attr("d", "M0,-5L10,0L0,5");
 
+        //Variables
+        var graph;
+        var node = svg.selectAll(".node");
+        var link = svg.selectAll(".link");
    
         //JQuery Event handlers
         $("#submit_address").submit(function(e){
@@ -168,21 +167,17 @@
               .call(d3.drag().on("start", dragstarted)
                 .on("drag", dragged)
                 .on("end", dragended));
-
           newNodes
               .append("circle")
                 .attr("r", 10)
-                .attr("fill", function(d) { return color(d.group); })
-
+                .attr("fill", function(d) { return color(d.group); });
           newNodes
               .append("text")
                 .attr("dx", 12)
-                .text(function(d) { return d.type === "wallet" ? d.address : d.hash; })
-
+                .text(function(d) { return d.type === "wallet" ? d.address : d.hash; });
           newNodes
               .append("title")
-                .text(function(d) { return d.type === "wallet" ? d.address : d.hash; })
-
+                .text(function(d) { return d.type === "wallet" ? d.address : d.hash; });
           newNodes
               .on('click', function(d, i){
                 if(d.type === "transaction"){
