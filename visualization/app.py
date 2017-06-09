@@ -78,4 +78,4 @@ return a,r1,b,r2,c,r3,d,r4,e
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
