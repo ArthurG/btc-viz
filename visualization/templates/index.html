@@ -145,8 +145,21 @@
         }
 
         function mergeGraph(newGraph){
-           
-           graph.nodes = graph.nodes.concat(newGraph.nodes);
+           var nodeSet = new Set();
+           graph.nodes.forEach(function(item){nodeSet.add(item['id'])}); 
+           graph.nodes = graph.nodes.concat(newGraph.nodes.filter(
+             function(node){
+               return !nodeSet.has(node['id'])
+             }));
+
+           var linkSet = new Set();
+           graph.links.forEach(function(item){linkSet.add(item['source']+"-"+item['target'])}); 
+           graph.links = graph.links.concat(newGraph.links.filter(
+             function(link){
+               return !linkSet.has(link['source']+link['target']);
+             }));
+
+
            graph.links = graph.links.concat(newGraph.links);
            render();
         }
