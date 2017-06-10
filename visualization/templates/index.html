@@ -69,23 +69,18 @@
         <h1>Bootstrap starter template</h1>
         <p class="lead">Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.</p>
 
-        
-
-    <form id="submit_address">
-        <div class="form-inline">
-            <div class="row">
-              <div class="form-group">
-                <input type="text" class="form-control" id="inputAddress" placeholder="BTC address">
-              </div>
-              <div class="form-group">
-                <button type="submit" class="btn btn-primary">Search</button>
-              </div>
+        <form id="submit_address">
+            <div class="form-inline">
+                <div class="row">
+                  <div class="form-group">
+                    <input type="text" class="form-control" id="inputAddress" placeholder="BTC address">
+                  </div>
+                  <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                  </div>
+                </div>
             </div>
- 
-        </div>
-    </form>
-
-
+        </form>
 
         <svg width="960" height="600"></svg>
       </div>
@@ -93,15 +88,16 @@
     </div><!-- /.container -->
 
       <script src="https://d3js.org/d3.v4.min.js"></script>
-
       <!-- jQuery library -->
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
       <script>
         //Styling and maximum prettiness
         var svg = d3.select("svg"),
             width = +svg.attr("width"),
             height = +svg.attr("height");
 
+      
 
         var color = d3.scaleOrdinal(d3.schemeCategory20);
 
@@ -141,6 +137,19 @@
            e.preventDefault();
         });
 
+        //Handle adding nodes
+        function handleDblClick(d){
+           d3.json("get_neighbour_wallet?wallet="+d.address, function(error, json){
+              mergeGraph(json);
+           });
+        }
+
+        function mergeGraph(newGraph){
+           
+           graph.nodes = graph.nodes.concat(newGraph.nodes);
+           graph.links = graph.links.concat(newGraph.links);
+           render();
+        }
 
         //D3 render
         function render() {
@@ -187,7 +196,7 @@
                 if(d.type === "wallet"){
                   let  id = d.address;
                   //some ajax call
-                  console.log(id);
+                  handleDblClick(d);
                 }
               });
 
