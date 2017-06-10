@@ -3,41 +3,41 @@
 <html lang="en">
 
   <head>
-     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
-      <!-- Optional theme -->
-      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-       <title>Starter Template for Bootstrap</title>
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <title>Starter Template for Bootstrap</title>
 
-  
-      <meta charset="utf-8">
-      <style>
-        <!- Bootstrap ->
-        body {
-          padding-top: 50px;
-        }
+
+    <meta charset="utf-8">
+    <style>
+<!- Bootstrap ->
+body {
+  padding-top: 50px;
+}
         .starter-template {
           padding: 40px 15px;
           text-align: center;
         }
 
-      .link {
-        stroke: #999;
-        stroke-opacity: 0.6;
-        fill: none;
-      }
+        .link {
+          stroke: #999;
+          stroke-opacity: 0.6;
+          fill: none;
+        }
 
-      .nodes circle {
-        stroke: #fff;
-        stroke-width: 1.5px;
-      }
+        .nodes circle {
+          stroke: #fff;
+          stroke-width: 1.5px;
+        }
 
-      .node text {
-        pointer-events: none;
-        font: 10px sans-serif;
-      }
+        .node text {
+          pointer-events: none;
+          font: 10px sans-serif;
+        }
 
-      </style>
+    </style>
   </head>
 
   <body>
@@ -70,16 +70,16 @@
         <p class="lead">Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.</p>
 
         <form id="submit_address">
-            <div class="form-inline">
-                <div class="row">
-                  <div class="form-group">
-                    <input type="text" class="form-control" id="inputAddress" placeholder="BTC address">
-                  </div>
-                  <div class="form-group">
-                    <button type="submit" class="btn btn-primary">Search</button>
-                  </div>
-                </div>
+          <div class="form-inline">
+            <div class="row">
+              <div class="form-group">
+                <input type="text" class="form-control" id="inputAddress" placeholder="BTC address">
+              </div>
+              <div class="form-group">
+                <button type="submit" class="btn btn-primary">Search</button>
+              </div>
             </div>
+          </div>
         </form>
 
         <svg width="960" height="600"></svg>
@@ -87,172 +87,168 @@
 
     </div><!-- /.container -->
 
-      <script src="https://d3js.org/d3.v4.min.js"></script>
-      <!-- jQuery library -->
-      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
-      <script>
-        //Styling and maximum prettiness
-        var svg = d3.select("svg"),
-            width = +svg.attr("width"),
-            height = +svg.attr("height");
-
-      
-
-        var color = d3.scaleOrdinal(d3.schemeCategory20);
-
-        var simulation = d3.forceSimulation()
-            .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(function(d){ return 150;}))
-            .force("charge", d3.forceManyBody())
-            .force("center", d3.forceCenter(width / 2, height / 2))
-            .on("tick", ticked);
-
-        // build the arrow end.
-        svg.append("svg:defs").selectAll("marker")
-          .data(["end"])      // Different link/path types can be defined here
-        .enter().append("svg:marker")    // This section adds in the arrows
-          .attr("id", String)
-          .attr("viewBox", "0 -5 10 10")
-          .attr("refX", 15)
-          .attr("refY", -1.5)
-          .attr("markerWidth", 6)
-          .attr("markerHeight", 6)
-          .attr("orient", "auto")
-        .append("svg:path")
-          .attr("d", "M0,-5L10,0L0,5");
-
-        //Variables
-        var graph;
-        var node = svg.selectAll(".node");
-        var link = svg.selectAll(".link");
-   
-        //JQuery Event handlers
-        $("#submit_address").submit(function(e){
-           var addrCurious = $("#inputAddress").val();
-           d3.json("get_neighbour_wallet?wallet="+addrCurious, function(error, json){
-              if (error) throw error;
-              graph = json;
-              render();
-           });
-           e.preventDefault();
-        });
-
-        //Handle adding nodes
-        function handleDblClick(d){
-           d3.json("get_neighbour_wallet?wallet="+d.address, function(error, json){
-              mergeGraph(json);
-           });
-        }
-
-        function mergeGraph(newGraph){
-           var nodeSet = new Set();
-           graph.nodes.forEach(function(item){nodeSet.add(item['id'])}); 
-           graph.nodes = graph.nodes.concat(newGraph.nodes.filter(
-             function(node){
-               return !nodeSet.has(node['id'])
-             }));
-
-           var linkSet = new Set();
-           graph.links.forEach(function(item){linkSet.add(item['source']+"-"+item['target'])}); 
-           graph.links = graph.links.concat(newGraph.links.filter(
-             function(link){
-               return !linkSet.has(link['source']+link['target']);
-             }));
+    <script>
+//Styling and maximum prettiness
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
 
 
-           graph.links = graph.links.concat(newGraph.links);
-           render();
-        }
 
-        //D3 render
-        function render() {
+var color = d3.scaleOrdinal(d3.schemeCategory20);
 
-          link = svg.selectAll(".link")
-            .data(graph.links)
-       
-          link.exit().remove();
+var simulation = d3.forceSimulation()
+  .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(function(d){ return 150;}))
+  .force("charge", d3.forceManyBody())
+  .force("center", d3.forceCenter(width / 2, height / 2))
+  .on("tick", ticked);
 
-          link.enter().append("path")
-              .attr("class", "link")
-              .attr("stroke-width", function(d) { return (Math.log(Math.log(d.value))); })
-              .attr("marker-end", "url(#end)");
+  // build the arrow end.
+  svg.append("svg:defs").selectAll("marker")
+  .data(["end"])      // Different link/path types can be defined here
+  .enter().append("svg:marker")    // This section adds in the arrows
+  .attr("id", String)
+  .attr("viewBox", "0 -5 10 10")
+  .attr("refX", 15)
+  .attr("refY", -1.5)
+  .attr("markerWidth", 6)
+  .attr("markerHeight", 6)
+  .attr("orient", "auto")
+  .append("svg:path")
+  .attr("d", "M0,-5L10,0L0,5");
 
+  //Variables
+  var graph;
+  var node = svg.selectAll(".node");
+  var link = svg.selectAll(".link");
 
-          node = svg.selectAll(".node")
-             .data(graph.nodes);
+  //JQuery Event handlers
+  $("#submit_address").submit(function(e){
+    var addrCurious = $("#inputAddress").val();
+    d3.json("get_neighbour_wallet?wallet="+addrCurious, function(error, json){
+      if (error) throw error;
+      graph = json;
+      render();
+    });
+    e.preventDefault();
+  });
 
-          node.exit().remove();
+//Handle adding nodes
+function handleDblClick(d){
+  d3.json("get_neighbour_wallet?wallet="+d.address, function(error, json){
+    mergeGraph(json);
+  });
+}
 
-          newNodes = node
-              .enter().append("svg:g")
-              .attr("class", "node")
-              .call(d3.drag().on("start", dragstarted)
-                .on("drag", dragged)
-                .on("end", dragended));
-          newNodes
-              .append("circle")
-                .attr("r", 10)
-                .attr("fill", function(d) { return color(d.group); });
-          newNodes
-              .append("text")
-                .attr("dx", 12)
-                .text(function(d) { return d.type === "wallet" ? d.address : d.hash; });
-          newNodes
-              .append("title")
-                .text(function(d) { return d.type === "wallet" ? d.address : d.hash; });
-          newNodes
-              .on('dblclick', function(d, i){
-                if(d.type === "transaction"){
-                  let  id = d.hash;
-                  //some ajax call
-                }
-                if(d.type === "wallet"){
-                  let  id = d.address;
-                  //some ajax call
-                  handleDblClick(d);
-                }
-              });
+function mergeGraph(newGraph){
+  var nodeSet = new Set();
+  graph.nodes.forEach(function(item){nodeSet.add(item['id'])}); 
+  graph.nodes = graph.nodes.concat(newGraph.nodes.filter(function(node){
+    return !nodeSet.has(node['id'])
+  }));
 
-          node = svg.selectAll(".node");
-          link = svg.selectAll(".link");
+  var linkSet = new Set();
+  graph.links.forEach(function(item){linkSet.add(item['source']+"-"+item['target'])}); 
+  graph.links = graph.links.concat(newGraph.links.filter(function(link){
+    return !linkSet.has(link['source']+link['target']);
+  }));
 
-          simulation.nodes(graph.nodes);
-          simulation.force("link").links(graph.links);
-          simulation.restart();
+  render();
+}
 
-        }//End Render function
+//D3 render
+function render() {
 
+  link = svg.selectAll(".link")
+    .data(graph.links)
 
-        //D3 visualization manipulation helpers 
-        function ticked() {
-          link.attr("d", function(d) {
-              var dx = d.target.x - d.source.x,
-                  dy = d.target.y - d.source.y,
-                  dr = Math.sqrt(dx * dx + dy * dy);
-              return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
-          });
-          node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-        }
+    link.exit().remove();
 
-        function dragstarted(d) {
-          if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-          d.fx = d.x;
-          d.fy = d.y;
-        }
-
-        function dragged(d) {
-          d.fx = d3.event.x;
-          d.fy = d3.event.y;
-        }
-
-        function dragended(d) {
-          if (!d3.event.active) simulation.alphaTarget(0);
-          d.fx = null;
-          d.fy = null;
-        }
+  link.enter().append("path")
+    .attr("class", "link")
+    .attr("stroke-width", function(d) { return (Math.log(Math.log(d.value))); })
+    .attr("marker-end", "url(#end)");
 
 
-      </script>
+  node = svg.selectAll(".node")
+    .data(graph.nodes);
+
+  node.exit().remove();
+
+  newNodes = node
+    .enter().append("svg:g")
+    .attr("class", "node")
+    .call(d3.drag().on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended));
+  newNodes
+    .append("circle")
+    .attr("r", 10)
+    .attr("fill", function(d) { return color(d.group); });
+  newNodes
+    .append("text")
+    .attr("dx", 12)
+    .text(function(d) { return d.type === "wallet" ? d.address : d.hash; });
+  newNodes
+    .append("title")
+    .text(function(d) { return d.type === "wallet" ? d.address : d.hash; });
+  newNodes
+    .on('dblclick', function(d, i){
+      if(d.type === "transaction"){
+        let  id = d.hash;
+        //some ajax call
+      }
+      if(d.type === "wallet"){
+        let  id = d.address;
+        //some ajax call
+        handleDblClick(d);
+      }
+    });
+
+  node = svg.selectAll(".node");
+  link = svg.selectAll(".link");
+
+  simulation.nodes(graph.nodes);
+  simulation.force("link").links(graph.links);
+  simulation.restart();
+
+}//End Render function
+
+
+//D3 visualization manipulation helpers 
+function ticked() {
+  link.attr("d", function(d) {
+    var dx = d.target.x - d.source.x,
+    dy = d.target.y - d.source.y,
+    dr = Math.sqrt(dx * dx + dy * dy);
+    return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+  });
+  node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+}
+
+function dragstarted(d) {
+  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+  d.fx = d.x;
+  d.fy = d.y;
+}
+
+function dragged(d) {
+  d.fx = d3.event.x;
+  d.fy = d3.event.y;
+}
+
+function dragended(d) {
+  if (!d3.event.active) simulation.alphaTarget(0);
+  d.fx = null;
+  d.fy = null;
+}
+
+
+    </script>
 
   </body>
 </html>
