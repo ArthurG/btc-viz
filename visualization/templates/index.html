@@ -37,6 +37,19 @@
         font: 10px sans-serif;
       }
 
+      svg{
+        border: 5px solid black;
+      }
+      #hover-info {
+        border: 5px solid red;
+        width: 960px;
+        margin: auto;
+      }
+
+      #hover-key-value-template{
+        text-align: left;
+      }
+
       </style>
   </head>
 
@@ -83,6 +96,17 @@
         </form>
 
         <svg width="960" height="600"></svg>
+        <div id="hover-info" width="960px" height="600">
+          <div id="hover-key-value-template" display="none">
+            <h6 class="key">
+              Hi
+            </h6>
+            <p class="value">
+              Hello
+            </p>
+          </div>
+
+        </div>
       </div>
 
     </div><!-- /.container -->
@@ -212,6 +236,10 @@
                   handleDblClick(d);
                 }
               });
+          newNodes
+            .on('mouseover', function(d, i){
+              console.log(d);
+            });
 
           node = svg.selectAll(".node");
           link = svg.selectAll(".link");
