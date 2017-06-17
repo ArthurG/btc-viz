@@ -37,6 +37,42 @@
         font: 10px sans-serif;
       }
 
+      svg{
+        border: 5px solid black;
+      }
+      #hover-pair-template{
+        display: none;
+      }
+      #hover-info {
+        width: 960px;
+        min-height: 3em;
+        margin: auto;
+      }
+      .hover-pair{
+        border: 0.05em solid blue;
+        border-radius: 0.5em;
+        float: left;
+        display: inline-block;
+        padding: 0.25em 0.5em;
+        margin: 0.25em;
+      }
+      .hover-key{
+        float: left;
+        border-radius: 0.5em;
+        display: inline-block;
+        padding: 0.5em;
+        margin: 0;
+        background-color: black;
+        color: white;
+      }
+      .hover-value{
+        float: left;
+        display: inline-block;
+        padding: 0.5em;
+        margin: 0;
+      }
+
+
       </style>
   </head>
 
@@ -83,6 +119,18 @@
         </form>
 
         <svg width="960" height="600"></svg>
+        <div id="hover-info">
+          <!--<div id="hovered-item-template" style="display: none;">-->
+          <div id="hover-pair-template">
+              <h6 class="hover-key">
+                Hi
+              </h6>
+              <h6 class="hover-value">
+                Hello
+              </h6>
+          </div>
+
+        </div>
       </div>
 
     </div><!-- /.container -->
@@ -164,6 +212,53 @@
            render();
         }
 
+        //Helper function to update info at the bottom of the graph
+        function updateHoverInfo(info){
+          unhoverItem();
+          var $info = $("#hover-info");
+          var $template = $("#hover-pair-template");
+          Object.keys(info).forEach(function(attribute){
+              var $clone = $template.clone();
+              $clone.attr("id", "").attr("class", "hover-pair");
+              $clone.find(".hover-key").text(attribute)
+              $clone.find(".hover-value").text(info[attribute]);
+              $clone.appendTo($info);
+          });
+        }
+
+        //Handling hover nodes
+        function hoverNode(d){
+          var attrShow = ["type", "address","hash"];
+          var info = {};
+          attrShow.forEach(function(attribute, idx, arr){
+            if(d[attribute]){
+              info[attribute] = d[attribute];
+            }
+            if(idx === arr.length -1){
+              updateHoverInfo(info);
+            }
+          });
+        }
+
+        //Handling hover Edges
+        function hoverEdge(d){
+          unhoverItem();
+          var info = {};
+          info["Transaction Value"] = d["value"];
+          var src = d["source"];
+          info["From"] = (src.type === "transaction") ? src["hash"] : src["address"];
+          var dest = d["target"];
+          info["To"] = (dest.type === "transaction") ? dest["hash"] : dest["address"];
+
+          updateHoverInfo(info);
+        }
+
+        function unhoverItem(){
+          var $info = $("#hover-info");
+          $info.find(".hover-pair").remove()
+        }
+
+
         //D3 render
         function render() {
 
@@ -175,7 +270,9 @@
           link.enter().append("path")
               .attr("class", "link")
               .attr("stroke-width", function(d) { return (Math.log(Math.log(d.value))); })
-              .attr("marker-end", "url(#end)");
+              .attr("marker-end", "url(#end)")
+              .on('mouseover', hoverEdge)
+              .on('mouseout', unhoverItem);
 
 
           node = svg.selectAll(".node")
@@ -212,6 +309,10 @@
                   handleDblClick(d);
                 }
               });
+          newNodes
+            .on('mouseover', hoverNode)
+            .on('mouseout', unhoverItem);
+
 
           node = svg.selectAll(".node");
           link = svg.selectAll(".link");
