@@ -293,7 +293,7 @@
           newNodes
               .append("text")
                 .attr("dx", 12)
-                .text(function(d) { return d.type === "wallet" ? d.address : d.hash; });
+                .text(function(d) { return (d.type === "wallet" ? d.address.substring(0,7) : d.hash.substring(0, 7)) + "..."; });
           newNodes
               .append("title")
                 .text(function(d) { return d.type === "wallet" ? d.address : d.hash; });
