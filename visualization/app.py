@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_from_directory
 
 from neo4j.v1 import GraphDatabase, basic_auth
 import json
@@ -8,7 +8,11 @@ app = Flask(__name__)
 
 @app.route("/")
 def main():
-    return render_template('index.html')
+    return send_from_directory('static/html', 'index.html')
+
+@app.route('/css/<path:path>')
+def send_css(path):
+    return send_from_directory('static/css', path)
 
 @app.route("/get_neighbour_wallet")
 def get_json():
