@@ -1,0 +1,61 @@
+<!- Bootstrap ->
+body {
+  padding-top: 50px;
+}
+.starter-template {
+  padding: 40px 15px;
+  text-align: center;
+}
+
+.link {
+  stroke: #999;
+  stroke-opacity: 0.6;
+  fill: none;
+}
+
+.nodes circle {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.node text {
+  pointer-events: none;
+  font: 10px sans-serif;
+}
+
+svg{
+  border: 5px solid black;
+}
+#hover-pair-template{
+  display: none;
+}
+#hover-info {
+  width: 960px;
+  min-height: 3em;
+  margin: auto;
+}
+.hover-pair{
+  border: 0.05em solid blue;
+  border-radius: 0.5em;
+  float: left;
+  display: inline-block;
+  padding: 0.25em 0.5em;
+  margin: 0.25em;
+}
+.hover-key{
+  float: left;
+  border-radius: 0.5em;
+  display: inline-block;
+  padding: 0.5em;
+  margin: 0;
+  background-color: black;
+  color: white;
+}
+.hover-value{
+  float: left;
+  display: inline-block;
+  padding: 0.5em;
+  margin: 0;
+}
+
+

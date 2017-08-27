@@ -14,6 +14,11 @@ def main():
 def send_css(path):
     return send_from_directory('static/css', path)
 
+@app.route('/js/<path:path>')
+def send_js(path):
+    return send_from_directory('static/js', path)
+
+
 @app.route("/get_neighbour_wallet")
 def get_json():
     wallet_curious = request.args.get("wallet")
