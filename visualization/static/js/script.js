@@ -1,9 +1,18 @@
+var additionNumber = 0;
+var dependancies = {};
+
+var sample = {
+  //(nodeId: array of dependents)
+  1: [2, 3, 4, 5],
+  2: [],
+  3: [6,7,8],
+  4: [9]
+}
+
 //Styling and maximum prettiness
 var svg = d3.select("svg"),
     width = +svg.attr("width"),
     height = +svg.attr("height");
-
-
 
 var color = d3.scaleOrdinal(d3.schemeCategory20);
 
@@ -39,6 +48,27 @@ var simulation = d3.forceSimulation()
     d3.json("get_neighbour_wallet?wallet="+addrCurious, function(error, json){
       if (error) throw error;
       graph = json;
+
+      dependancies = {};
+      additionNumber=0;
+      for (var i = 0;i<graph.nodes.length;i++){
+        var node = graph.nodes[i];
+        node["dependencyId"] = "node"+additionNumber;
+        dependancies["node"+additionNumber] = []
+        if (additionNumber !== 0){
+          dependancies["node0"].push("node"+additionNumber)
+        }
+        additionNumber++;
+      }
+      for (var i=0;i<graph.links.length;i++){
+        var link = graph.links[i];
+        link["dependencyId"] = "link"+additionNumber;
+        dependancies["link"+additionNumber] = []
+        dependancies["node0"].push("link"+additionNumber)
+        additionNumber++;
+      }
+
+
       render();
     });
     e.preventDefault();
@@ -46,28 +76,79 @@ var simulation = d3.forceSimulation()
 
 //Handle adding nodes
 function handleDblClick(d){
-  d3.json("get_neighbour_wallet?wallet="+d.address, function(error, json){
-    mergeGraph(json);
-  });
+
+    depId = d["dependencyId"];
+    if (dependancies[d["dependencyId"]].length === 0){
+      d3.json("get_neighbour_wallet?wallet="+d.address, function(error, json){
+          mergeGraph(json, d["dependencyId"]);
+      });
+    }
+    else {
+      var thingsToRemove = new Set();
+      var queue = [];
+      queue.push(depId);
+      while(queue.length > 0){
+        var item = queue.pop();
+        thingsToRemove.add(item);
+        queue = queue.concat(dependancies[item]);
+        delete dependancies[item];
+      }
+      thingsToRemove.delete(depId);
+      dependancies[depId] = [];
+
+      var newGraph = {links: [], nodes: []}
+      for(var i = 0;i<graph.nodes.length;i++){
+        if (!thingsToRemove.has(graph.nodes[i]["dependencyId"])){
+          newGraph.nodes.push(graph.nodes[i]);
+        }
+      }
+      for(var i = 0;i<graph.links.length;i++){
+        if (!thingsToRemove.has(graph.links[i]["dependencyId"])){
+          newGraph.links.push(graph.links[i]);
+        }
+      }
+      graph = newGraph;
+      render();
+    }
 }
 
-function mergeGraph(newGraph){
+
+function mergeGraph(newGraph, branchFromId){
   var nodeSet = new Set();
   graph.nodes.forEach(function(item){nodeSet.add(item['id'])}); 
-  graph.nodes = graph.nodes.concat(newGraph.nodes.filter(
+  newGraph.nodes = newGraph.nodes.filter(
         function(node){
           return !nodeSet.has(node['id'])
-        }));
+        });
 
   var linkSet = new Set();
   graph.links.forEach(function(item){linkSet.add(item['source']+"-"+item['target'])}); 
-  graph.links = graph.links.concat(newGraph.links.filter(
+  newGraph.links = newGraph.links.filter(
         function(link){
-          return !linkSet.has(link['source']+link['target']);
-        }));
+          return !linkSet.has(link['source']+"-"+link['target']);
+        });
 
 
+  for (var i = 0;i<newGraph.nodes.length;i++){
+        var node = newGraph.nodes[i];
+        node["dependencyId"] = "node"+additionNumber;
+        dependancies["node"+additionNumber] = []
+        dependancies[branchFromId].push("node"+additionNumber)
+        additionNumber++;
+  }
+
+  for (var i=0;i<newGraph.links.length;i++){
+    var link = newGraph.links[i];
+    link["dependencyId"] = "link"+additionNumber;
+    dependancies["link"+additionNumber] = []
+    dependancies[branchFromId].push("link"+additionNumber)
+    additionNumber++;
+  }
+
+
+  graph.nodes = graph.nodes.concat(newGraph.nodes);
   graph.links = graph.links.concat(newGraph.links);
+
   render();
 }
 
@@ -144,7 +225,7 @@ function render() {
   link = svg.selectAll(".link")
     .data(graph.links)
 
-    link.exit().remove();
+  link.exit().remove();
 
   link.enter().append("path")
     .attr("class", "link")
@@ -194,10 +275,10 @@ function render() {
 
   newNodes.on('click', function(d){
     if (d.type === "transaction"){
-      sendToClipboard(d.hash);
+      //sendToClipboard(d.hash);
     }
     if (d.type === "wallet") {
-      sendToClipboard(d.address);
+      //sendToClipboard(d.address);
     }
   });
 

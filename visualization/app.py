@@ -49,7 +49,7 @@ return a,r1,b,r2,c,r3,d,r4,e
         if (record["c"] != None):
             node_c = {"id": record["c"].id, "type": "wallet", "group": 3, "address": record["c"]["address"] }
             if (node_c not in nodes):
-                nodes.append(node_c)
+                nodes.insert(0, node_c) #Need to insert root wallet at index 0
 
         if (record["d"] != None):
             node_d = {"id": record["d"].id, "type": "transaction", "group": 2, "hash": record["d"]["hash"] }
