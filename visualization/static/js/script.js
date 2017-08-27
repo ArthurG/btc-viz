@@ -1,150 +1,100 @@
 var additionNumber = 0;
 var dependancies = {};
 
-var sample = {
-  //(nodeId: array of dependents)
-  1: [2, 3, 4, 5],
-  2: [],
-  3: [6,7,8],
-  4: [9]
-}
+//Variables
+var graph;
 
-//Styling and maximum prettiness
-var svg = d3.select("svg"),
-    width = +svg.attr("width"),
-    height = +svg.attr("height");
+//JQuery Event handlers
+$("#submit_address").submit(function(e){
+  var addrCurious = $("#inputAddress").val();
+  console.log(addrCurious);
+  d3.json("get_neighbour_wallet?wallet="+addrCurious, function(error, json){
+    if (error) throw error;
+    graph = json;
 
-var color = d3.scaleOrdinal(d3.schemeCategory20);
+    dependancies = {};
+    additionNumber=0;
+    buildDependencies(graph, "node0");
 
-var simulation = d3.forceSimulation()
-  .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(function(d){ return 150;}))
-  .force("charge", d3.forceManyBody())
-  .force("center", d3.forceCenter(width / 2, height / 2))
-  .on("tick", ticked);
-
-  // build the arrow end.
-  svg.append("svg:defs").selectAll("marker")
-  .data(["end"])      // Different link/path types can be defined here
-  .enter().append("svg:marker")    // This section adds in the arrows
-  .attr("id", String)
-  .attr("viewBox", "0 -5 10 10")
-  .attr("refX", 15)
-  .attr("refY", -1.5)
-  .attr("markerWidth", 6)
-  .attr("markerHeight", 6)
-  .attr("orient", "auto")
-  .append("svg:path")
-  .attr("d", "M0,-5L10,0L0,5");
-
-  //Variables
-  var graph;
-  var node = svg.selectAll(".node");
-  var link = svg.selectAll(".link");
-
-  //JQuery Event handlers
-  $("#submit_address").submit(function(e){
-    var addrCurious = $("#inputAddress").val();
-    console.log(addrCurious);
-    d3.json("get_neighbour_wallet?wallet="+addrCurious, function(error, json){
-      if (error) throw error;
-      graph = json;
-
-      dependancies = {};
-      additionNumber=0;
-      for (var i = 0;i<graph.nodes.length;i++){
-        var node = graph.nodes[i];
-        node["dependencyId"] = "node"+additionNumber;
-        dependancies["node"+additionNumber] = []
-        if (additionNumber !== 0){
-          dependancies["node0"].push("node"+additionNumber)
-        }
-        additionNumber++;
-      }
-      for (var i=0;i<graph.links.length;i++){
-        var link = graph.links[i];
-        link["dependencyId"] = "link"+additionNumber;
-        dependancies["link"+additionNumber] = []
-        dependancies["node0"].push("link"+additionNumber)
-        additionNumber++;
-      }
-
-
-      render();
-    });
-    e.preventDefault();
+    render();
   });
+  e.preventDefault();
+});
+
+// Modifies Graph so that each node is dependant on dependantOn
+function buildDependencies(graph, dependantOn){
+  for (var i = 0;i<graph.nodes.length;i++){
+    var node = graph.nodes[i];
+    node["dependencyId"] = "node"+additionNumber;
+    dependancies["node"+additionNumber] = []
+      if (additionNumber !== 0){
+        dependancies[dependantOn].push("node"+additionNumber)
+      }
+    additionNumber++;
+  }
+  for (var i=0;i<graph.links.length;i++){
+    var link = graph.links[i];
+    link["dependencyId"] = "link"+additionNumber;
+    dependancies["link"+additionNumber] = []
+      dependancies[dependantOn].push("link"+additionNumber)
+      additionNumber++;
+  }
+}
 
 //Handle adding nodes
 function handleDblClick(d){
 
-    depId = d["dependencyId"];
-    if (dependancies[d["dependencyId"]].length === 0){
-      d3.json("get_neighbour_wallet?wallet="+d.address, function(error, json){
-          mergeGraph(json, d["dependencyId"]);
-      });
+  depId = d["dependencyId"];
+  if (dependancies[depId].length === 0){
+    d3.json("get_neighbour_wallet?wallet="+d.address, function(error, json){
+      mergeGraph(json, d["dependencyId"]);
+    });
+  }
+  else {
+    // Figure out which nodes to remove, use a BFS strategy to remove nodes
+    // that came after the clicked node
+    var thingsToRemove = new Set();
+    var queue = dependancies[depId].slice(0);
+    dependancies[depId] = [];
+    while(queue.length > 0){
+      var item = queue.pop();
+      thingsToRemove.add(item);
+      queue = queue.concat(dependancies[item]);
+      delete dependancies[item];
     }
-    else {
-      var thingsToRemove = new Set();
-      var queue = [];
-      queue.push(depId);
-      while(queue.length > 0){
-        var item = queue.pop();
-        thingsToRemove.add(item);
-        queue = queue.concat(dependancies[item]);
-        delete dependancies[item];
-      }
-      thingsToRemove.delete(depId);
-      dependancies[depId] = [];
 
-      var newGraph = {links: [], nodes: []}
-      for(var i = 0;i<graph.nodes.length;i++){
-        if (!thingsToRemove.has(graph.nodes[i]["dependencyId"])){
-          newGraph.nodes.push(graph.nodes[i]);
-        }
+    // Construct the new graph
+    var newGraph = {links: [], nodes: []}
+    for(var i = 0;i<graph.nodes.length;i++){
+      if (!thingsToRemove.has(graph.nodes[i]["dependencyId"])){
+        newGraph.nodes.push(graph.nodes[i]);
       }
-      for(var i = 0;i<graph.links.length;i++){
-        if (!thingsToRemove.has(graph.links[i]["dependencyId"])){
-          newGraph.links.push(graph.links[i]);
-        }
-      }
-      graph = newGraph;
-      render();
     }
+    for(var i = 0;i<graph.links.length;i++){
+      if (!thingsToRemove.has(graph.links[i]["dependencyId"])){
+        newGraph.links.push(graph.links[i]);
+      }
+    }
+    graph = newGraph;
+    render();
+  }
 }
 
-
+//Merges newGraph into Graph, and, all items in newGraph are dependant on branchFromId
 function mergeGraph(newGraph, branchFromId){
   var nodeSet = new Set();
   graph.nodes.forEach(function(item){nodeSet.add(item['id'])}); 
-  newGraph.nodes = newGraph.nodes.filter(
-        function(node){
-          return !nodeSet.has(node['id'])
-        });
+  newGraph.nodes = newGraph.nodes.filter( function(node){
+    return !nodeSet.has(node['id'])
+  });
 
   var linkSet = new Set();
   graph.links.forEach(function(item){linkSet.add(item['source']+"-"+item['target'])}); 
-  newGraph.links = newGraph.links.filter(
-        function(link){
-          return !linkSet.has(link['source']+"-"+link['target']);
-        });
+  newGraph.links = newGraph.links.filter(function(link){
+    return !linkSet.has(link['source']+"-"+link['target']);
+  });
 
-
-  for (var i = 0;i<newGraph.nodes.length;i++){
-        var node = newGraph.nodes[i];
-        node["dependencyId"] = "node"+additionNumber;
-        dependancies["node"+additionNumber] = []
-        dependancies[branchFromId].push("node"+additionNumber)
-        additionNumber++;
-  }
-
-  for (var i=0;i<newGraph.links.length;i++){
-    var link = newGraph.links[i];
-    link["dependencyId"] = "link"+additionNumber;
-    dependancies["link"+additionNumber] = []
-    dependancies[branchFromId].push("link"+additionNumber)
-    additionNumber++;
-  }
-
+  buildDependencies(newGraph,branchFromId);
 
   graph.nodes = graph.nodes.concat(newGraph.nodes);
   graph.links = graph.links.concat(newGraph.links);
@@ -201,95 +151,127 @@ function unhoverItem(){
 //Handle Node Clicks 
 function sendToClipboard(string){
 
-     function cloneTemplate(template) {
-               return template.clone().attr("id", "").removeClass("template").removeClass("hidden").addClass("cloned");
-     }
+  function cloneTemplate(template) {
+    return template.clone().attr("id", "").removeClass("template").removeClass("hidden").addClass("cloned");
+  }
 
-    //Send string to clipboard
-    var $temp = $("<input>");
-    $("body").append($temp);
-    $temp.val(string).select();
-    document.execCommand("copy");
-    $temp.remove();
+  //Send string to clipboard
+  var $temp = $("<input>");
+  $("body").append($temp);
+  $temp.val(string).select();
+  document.execCommand("copy");
+  $temp.remove();
 
-    //Show alert
-    var newTemplate = cloneTemplate($("#alert-template"));
-    newTemplate.find("p").text("Copied '" + string + "' to clipboard");
-    $("#alerts-section").append(newTemplate);
+  //Show alert
+  var newTemplate = cloneTemplate($("#alert-template"));
+  newTemplate.find("p").text("Copied '" + string + "' to clipboard");
+  $("#alerts-section").append(newTemplate);
 
 }
 
-//D3 render
-function render() {
 
-  link = svg.selectAll(".link")
-    .data(graph.links)
+// D3 graph generation
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
 
-  link.exit().remove();
-
-  link.enter().append("path")
-    .attr("class", "link")
-    .attr("stroke-width", function(d) { return (Math.log(Math.log(d.value))); })
-    .attr("marker-end", "url(#end)")
-    .on('mouseover', hoverEdge)
-    .on('mouseout', unhoverItem);
+var node = svg.selectAll(".node");
+var link = svg.selectAll(".link");
 
 
-  node = svg.selectAll(".node")
-    .data(graph.nodes);
+var color = d3.scaleOrdinal(d3.schemeCategory20);
 
-  node.exit().remove();
+var simulation = d3.forceSimulation()
+  .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(function(d){ return 150;}))
+  .force("charge", d3.forceManyBody())
+  .force("center", d3.forceCenter(width / 2, height / 2))
+  .on("tick", ticked);
 
-  newNodes = node
-    .enter().append("svg:g")
-    .attr("class", "node")
-    .call(d3.drag().on("start", dragstarted)
-        .on("drag", dragged)
-        .on("end", dragended));
-  newNodes
-    .append("circle")
-    .attr("r", 10)
-    .attr("fill", function(d) { return color(d.group); });
-  newNodes
-    .append("text")
-    .attr("dx", 12)
-    .text(function(d) { return (d.type === "wallet" ? d.address.substring(0,7) : d.hash.substring(0, 7)) + "..."; });
-  newNodes
-    .append("title")
-    .text(function(d) { return d.type === "wallet" ? d.address : d.hash; });
-  newNodes
-    .on('dblclick', function(d, i){
-      if(d.type === "transaction"){
-        let  id = d.hash;
-        //some ajax call
+  // build the arrow end.
+  svg.append("svg:defs").selectAll("marker")
+  .data(["end"])      // Different link/path types can be defined here
+  .enter().append("svg:marker")    // This section adds in the arrows
+  .attr("id", String)
+  .attr("viewBox", "0 -5 10 10")
+  .attr("refX", 15)
+  .attr("refY", -1.5)
+  .attr("markerWidth", 6)
+  .attr("markerHeight", 6)
+  .attr("orient", "auto")
+  .append("svg:path")
+  .attr("d", "M0,-5L10,0L0,5");
+
+  //D3 render
+  function render() {
+
+    link = svg.selectAll(".link")
+      .data(graph.links)
+
+      link.exit().remove();
+
+    link.enter().append("path")
+      .attr("class", "link")
+      .attr("stroke-width", function(d) { return (Math.log(Math.log(d.value))); })
+      .attr("marker-end", "url(#end)")
+      .on('mouseover', hoverEdge)
+      .on('mouseout', unhoverItem);
+
+
+    node = svg.selectAll(".node")
+      .data(graph.nodes);
+
+    node.exit().remove();
+
+    newNodes = node
+      .enter().append("svg:g")
+      .attr("class", "node")
+      .call(d3.drag().on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
+    newNodes
+      .append("circle")
+      .attr("r", 10)
+      .attr("fill", function(d) { return color(d.group); });
+    newNodes
+      .append("text")
+      .attr("dx", 12)
+      .text(function(d) { return (d.type === "wallet" ? d.address.substring(0,7) : d.hash.substring(0, 7)) + "..."; });
+    newNodes
+      .append("title")
+      .text(function(d) { return d.type === "wallet" ? d.address : d.hash; });
+    newNodes
+      .on('dblclick', function(d, i){
+        if(d.type === "transaction"){
+          let  id = d.hash;
+          //some ajax call
+        }
+        if(d.type === "wallet"){
+          let  id = d.address;
+          //some ajax call
+          handleDblClick(d);
+        }
+      });
+    newNodes
+      .on('mouseover', hoverNode)
+      .on('mouseout', unhoverItem);
+
+    newNodes.on('click', function(d){
+      if (d.type === "transaction"){
+        //sendToClipboard(d.hash);
       }
-      if(d.type === "wallet"){
-        let  id = d.address;
-        //some ajax call
-        handleDblClick(d);
+      if (d.type === "wallet") {
+        //sendToClipboard(d.address);
       }
     });
-  newNodes
-    .on('mouseover', hoverNode)
-    .on('mouseout', unhoverItem);
 
-  newNodes.on('click', function(d){
-    if (d.type === "transaction"){
-      //sendToClipboard(d.hash);
-    }
-    if (d.type === "wallet") {
-      //sendToClipboard(d.address);
-    }
-  });
+    node = svg.selectAll(".node");
+    link = svg.selectAll(".link");
 
-  node = svg.selectAll(".node");
-  link = svg.selectAll(".link");
+    simulation.nodes(graph.nodes);
+    simulation.force("link").links(graph.links);
+    simulation.restart();
 
-  simulation.nodes(graph.nodes);
-  simulation.force("link").links(graph.links);
-  simulation.restart();
-
-}//End Render function
+  }//End Render function
 
 
 //D3 visualization manipulation helpers 
@@ -319,6 +301,3 @@ function dragended(d) {
   d.fx = null;
   d.fy = null;
 }
-
-
-
