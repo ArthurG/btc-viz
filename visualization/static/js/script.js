@@ -1,7 +1,6 @@
-var additionNumber = 0;
-var dependancies = {};
-
 //Variables
+var depUniqueId = 0;
+var dependancies = {};
 var graph;
 
 //JQuery Event handlers
@@ -13,31 +12,31 @@ $("#submit_address").submit(function(e){
     graph = json;
 
     dependancies = {};
-    additionNumber=0;
-    buildDependencies(graph, "node0");
-
+    depUniqueId=0;
+    calculateDependencies(graph, "node0");
     render();
+
   });
   e.preventDefault();
 });
 
 // Modifies Graph so that each node is dependant on dependantOn
-function buildDependencies(graph, dependantOn){
+function calculateDependencies(graph, dependantOn){
   for (var i = 0;i<graph.nodes.length;i++){
     var node = graph.nodes[i];
-    node["dependencyId"] = "node"+additionNumber;
-    dependancies["node"+additionNumber] = []
-      if (additionNumber !== 0){
-        dependancies[dependantOn].push("node"+additionNumber)
+    node["dependencyId"] = "node"+depUniqueId;
+    dependancies["node"+depUniqueId] = []
+      if (depUniqueId !== 0){
+        dependancies[dependantOn].push("node"+depUniqueId)
       }
-    additionNumber++;
+    depUniqueId++;
   }
   for (var i=0;i<graph.links.length;i++){
     var link = graph.links[i];
-    link["dependencyId"] = "link"+additionNumber;
-    dependancies["link"+additionNumber] = []
-      dependancies[dependantOn].push("link"+additionNumber)
-      additionNumber++;
+    link["dependencyId"] = "link"+depUniqueId;
+    dependancies["link"+depUniqueId] = []
+      dependancies[dependantOn].push("link"+depUniqueId)
+      depUniqueId++;
   }
 }
 
@@ -45,14 +44,17 @@ function buildDependencies(graph, dependantOn){
 function handleDblClick(d){
 
   depId = d["dependencyId"];
+
+  //If the node clicked is a leaf, then expand it 
   if (dependancies[depId].length === 0){
     d3.json("get_neighbour_wallet?wallet="+d.address, function(error, json){
       mergeGraph(json, d["dependencyId"]);
     });
-  }
-  else {
-    // Figure out which nodes to remove, use a BFS strategy to remove nodes
-    // that came after the clicked node
+  } else {
+    // If the node clicked is an internal node, then remove all nodes that it 
+    // opened
+    // Algorithm: Figure out which nodes/edges to remove using a DFS strategy 
+    // from current node, then, create a new graph with the nodes/edges not deleted
     var thingsToRemove = new Set();
     var queue = dependancies[depId].slice(0);
     dependancies[depId] = [];
@@ -80,7 +82,8 @@ function handleDblClick(d){
   }
 }
 
-//Merges newGraph into Graph, and, all items in newGraph are dependant on branchFromId
+//Merges newGraph into graph, and, all items in newGraph are dependant on 
+//branchFromId
 function mergeGraph(newGraph, branchFromId){
   var nodeSet = new Set();
   graph.nodes.forEach(function(item){nodeSet.add(item['id'])}); 
@@ -89,12 +92,13 @@ function mergeGraph(newGraph, branchFromId){
   });
 
   var linkSet = new Set();
-  graph.links.forEach(function(item){linkSet.add(item['source']+"-"+item['target'])}); 
+  graph.links.forEach(function(item){
+    linkSet.add(item['source']+"-"+item['target'])
+  }); 
   newGraph.links = newGraph.links.filter(function(link){
     return !linkSet.has(link['source']+"-"+link['target']);
   });
-
-  buildDependencies(newGraph,branchFromId);
+  calculateDependencies(newGraph,branchFromId);
 
   graph.nodes = graph.nodes.concat(newGraph.nodes);
   graph.links = graph.links.concat(newGraph.links);
@@ -166,7 +170,6 @@ function sendToClipboard(string){
   var newTemplate = cloneTemplate($("#alert-template"));
   newTemplate.find("p").text("Copied '" + string + "' to clipboard");
   $("#alerts-section").append(newTemplate);
-
 }
 
 
@@ -257,7 +260,7 @@ var simulation = d3.forceSimulation()
 
     newNodes.on('click', function(d){
       if (d.type === "transaction"){
-        //sendToClipboard(d.hash);
+        sendToClipboard(d.hash);
       }
       if (d.type === "wallet") {
         //sendToClipboard(d.address);
