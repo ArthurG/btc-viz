@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_from_directory
 
 from neo4j.v1 import GraphDatabase, basic_auth
 import json
@@ -8,7 +8,16 @@ app = Flask(__name__)
 
 @app.route("/")
 def main():
-    return render_template('index.html')
+    return send_from_directory('static/html', 'index.html')
+
+@app.route('/css/<path:path>')
+def send_css(path):
+    return send_from_directory('static/css', path)
+
+@app.route('/js/<path:path>')
+def send_js(path):
+    return send_from_directory('static/js', path)
+
 
 @app.route("/get_neighbour_wallet")
 def get_json():
@@ -40,7 +49,7 @@ return a,r1,b,r2,c,r3,d,r4,e
         if (record["c"] != None):
             node_c = {"id": record["c"].id, "type": "wallet", "group": 3, "address": record["c"]["address"] }
             if (node_c not in nodes):
-                nodes.append(node_c)
+                nodes.insert(0, node_c) #Need to insert root wallet at index 0
 
         if (record["d"] != None):
             node_d = {"id": record["d"].id, "type": "transaction", "group": 2, "hash": record["d"]["hash"] }
