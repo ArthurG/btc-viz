@@ -25,7 +25,7 @@ with open(IN_TRANSACTION_CSV_LOCATION, 'rb') as tx_in_file:
             walletsMap[tx_hash] = tx_id
             lastNumber+=1
 
-        print("CREATE ("+str(wallet_id)+":wallet {address: {"+wallet_addr+"}}) -[:SENT {satoshi: {"+str(tx_amt)+"}}] -> ("+str(tx_id)+":tx {hash:"+tx_hash+"})")
+        print("CREATE ("+str(wallet_id)+":wallet {address: \""+wallet_addr+"\"}) -[:SENT {satoshi: "+str(tx_amt)+"}]->("+str(tx_id)+":tx {hash:\""+tx_hash+"\"})")
 
 with open(OUT_TRANSACTION_CSV_LOCATION, 'rb') as tx_out_file:
     out_reader = csv.reader(tx_out_file, delimiter=",")
@@ -49,5 +49,4 @@ with open(OUT_TRANSACTION_CSV_LOCATION, 'rb') as tx_out_file:
             lastNumber+=1
 
 
-
-        print("CREATE ("+str(wallet_id)+":wallet {address: {"+wallet_addr+"}}) -[:RECEIVED {satoshi: {"+str(tx_amt)+"}}] -> ("+str(tx_id)+":tx {hash:"+tx_hash+"})")
+        print("CREATE ("+str(wallet_id)+":wallet {address: \""+wallet_addr+"\"}) -[:RECEIVED {satoshi: "+str(tx_amt)+"}]->("+str(tx_id)+":tx {hash:\""+tx_hash+"\"})")
