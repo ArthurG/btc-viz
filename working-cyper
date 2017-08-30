@@ -1,1 +1,0 @@
-CREATE (452:wallet{address:"1dice1e6pdhLzzWQq7yMidf6j8eAg7pkY"})-[:SENT {satoshi:100000}]->(378297:tx {hash:"490a75e85b1e2cbfcbfb7e5b33c423cab5976ea619ad3e5d693dad43bade7080"});

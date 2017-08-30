@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, send_from_directory
 from neo4j.v1 import GraphDatabase, basic_auth
 import json
 import math
+import requests
 
 app = Flask(__name__)
 
@@ -18,12 +19,7 @@ def send_css(path):
 def send_js(path):
     return send_from_directory('static/js', path)
 
-
-@app.route("/get_neighbour_wallet")
-def get_json():
-    wallet_curious = request.args.get("wallet")
-    print(wallet_curious)
-
+def get_neo(wallet_curious):
     driver = GraphDatabase.driver("bolt://localhost:7687", auth=basic_auth("neo4j", "123123"))
     session = driver.session()
     result = session.run("""
@@ -79,12 +75,70 @@ return a,r1,b,r2,c,r3,d,r4,e
         if (link_r4 not in links):
             links.append(link_r4)
 
-
-
     session.close()
     return json.dumps({"nodes": nodes, "links": links})
 
+def get_graphflow(wallet_curious):
+    endpoint = "http://localhost:8000/query"
 
+    #Get the things the wallet has received
+    ids = set()
+    nodes = []
+    links = []
+
+    query = "MATCH (a {address:\""+wallet_curious+"\"})-[:RECEIVED]->(b), (c)-[:SENT]->(b);"
+    resp = requests.post(endpoint, query)
+    res = resp.json()
+    for vertex in res["vertices"]:
+        v = res["vertices"][vertex]
+        ids.add(v["id"])
+        if(v["type"] == "Tx"):
+            nodes.append({"id": v["id"], "type": "transaction", "group": "2", "hash": v["properties"]["hash"]})
+        elif v["properties"]["address"] == wallet_curious:
+            nodes.append({"id": v["id"], "type": "wallet", "group": "1", "address": v["properties"]["address"]})
+        else:
+            nodes.append({"id": v["id"], "type": "wallet", "group": "3", "address": v["properties"]["address"]})
+    for edge in res["edges"]:
+        e = res["edges"][edge]
+        if e["type"] == "RECEIVED":
+            links.append({"source": res["vertices"][str(e["to_vertex_id"])]["id"], "target": e["from_vertex_id"], "value": int(e["properties"]["satoshi"])})
+        else:
+            links.append({"source": res["vertices"][str(e["from_vertex_id"])]["id"],"target": e["to_vertex_id"], "value": int(e["properties"]["satoshi"])})
+
+    query = "MATCH (a {address:\""+wallet_curious+"\"})-[:SENT]->(b), (c)-[:RECEIVED]->(b);"
+    resp = requests.post(endpoint, query)
+    res = resp.json()
+    for vertex in res["vertices"]:
+        v = res["vertices"][vertex]
+        if(v["id"] in ids):
+            continue
+         
+        ids.add(v["id"])
+        if(v["type"] == "Tx"):
+            nodes.append({"id": v["id"], "type": "transaction", "group": "2", "hash": v["properties"]["hash"]})
+        elif v["properties"]["address"] == wallet_curious:
+            nodes.append({"id": v["id"], "type": "wallet", "group": "1", "address": v["properties"]["address"]})
+        else:
+            nodes.append({"id": v["id"], "type": "wallet", "group": "3", "address": v["properties"]["address"]})
+
+    for edge in res["edges"]:
+        e = res["edges"][edge]
+        if e["type"] == "RECEIVED":
+            links.append({"source": res["vertices"][str(e["to_vertex_id"])]["id"], "target": e["from_vertex_id"], "value": int(e["properties"]["satoshi"])})
+        else:
+            links.append({"source": res["vertices"][str(e["from_vertex_id"])]["id"], "target": e["to_vertex_id"], "value": int(e["properties"]["satoshi"])})
+
+    return json.dumps({"nodes": nodes, "links": links})
+
+
+@app.route("/get_neighbour_wallet")
+def get_json():
+    wallet_curious = request.args.get("wallet")
+    return (get_graphflow(wallet_curious))
+    print(get_graphflow(wallet_curious))
+    return get_neo(wallet_curious)
+
+    
 
 if __name__ == "__main__":
     app.run(debug=True)
