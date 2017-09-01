@@ -10,8 +10,8 @@ from pprint import pprint
 
 
 def export_store_to_csv(store):
-    all_tx_hash = store.selectall("SELECT tx_hash FROM tx")
-    #all_tx_hash = store.selectall("SELECT tx_hash FROM tx LIMIT 1000000")
+    #all_tx_hash = store.selectall("SELECT tx_hash FROM tx")
+    all_tx_hash = store.selectall("SELECT tx_hash FROM tx LIMIT 10000000")
     with open(IN_TRANSACTION_CSV_LOCATION, 'ab') as in_file:
         in_writer = csv.writer(in_file, delimiter=',')
         with open(OUT_TRANSACTION_CSV_LOCATION, 'ab') as out_file:
