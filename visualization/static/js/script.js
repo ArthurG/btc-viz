@@ -204,6 +204,10 @@ var simulation = d3.forceSimulation()
   .append("svg:path")
   .attr("d", "M0,-5L10,0L0,5");
 
+
+
+
+
   //D3 render
   function render() {
 
@@ -258,6 +262,16 @@ var simulation = d3.forceSimulation()
       .on('mouseover', hoverNode)
       .on('mouseout', unhoverItem);
 
+    newNodes.on('contextmenu', function(d){
+      d3.event.preventDefault();
+
+      div.style("opacity", 0.9);
+      div.html($(".context-menu").html()+"<br/>")                               
+           .style("left", (d3.event.pageX) + "px")                                 
+           .style("top", (d3.event.pageY - 28) + "px");     
+          });
+
+
     newNodes.on('click', function(d){
       if (d.type === "transaction"){
         sendToClipboard(d.hash);
@@ -304,3 +318,30 @@ function dragended(d) {
   d.fx = null;
   d.fy = null;
 }
+
+function contextMenu(x, y) {
+
+  $("#context-menu").removeClass("hidden")
+    .css("position", "absolute")
+    .css("left", x+"px")
+    .css("top", y+"px")
+    .css("display", "block")
+
+
+    // Other interactions
+    d3.select('body')
+        .on('click', function() {
+            $('.context-menu').css("display", "none");
+        });
+
+}
+
+var div = d3.select("body").append("div")                                       
+   .attr("class", "tooltip")                                                       
+   .style("opacity", 0); 
+
+d3.select("body")
+        .on("click", function(){
+          d3.select(".tooltip").style("opacity", "0");
+        });
+

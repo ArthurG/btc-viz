@@ -134,11 +134,39 @@ def get_graphflow(wallet_curious):
 @app.route("/get_neighbour_wallet")
 def get_json():
     wallet_curious = request.args.get("wallet")
-    return (get_graphflow(wallet_curious))
-    print(get_graphflow(wallet_curious))
-    return get_neo(wallet_curious)
+    return get_graphflow(wallet_curious)
+    #return get_neo(wallet_curious)
 
     
+@app.route("/get_entity")
+def get_entity():
+    entity_curious = request.args.get("entity")
+    ans = set()
+    new = set([entity_curious])
+    endpoint = "http://localhost:8000/query"
+    while (len(new) > 0):
+        ans.update(new)
+        new2 = set()
+
+        for wallet_curious in new:
+            query = "MATCH (a {address:\""+wallet_curious+"\"})-[:RECEIVED]->(b), (c)-[:RECEIVED]->(b);"
+            resp = requests.post(endpoint, query)
+            newJson = resp.json()
+            for nodeId in newJson["vertices"]:
+                if newJson["vertices"][nodeId]["type"] == "Wallet" and newJson["vertices"][nodeId]["properties"]["address"] not in ans.union(new).union(new2):
+                    new2.add(newJson["vertices"][nodeId]["properties"]["address"])
+
+            query = "MATCH (a {address:\""+wallet_curious+"\"})-[:SENT]->(b), (c)-[:SENT]->(b);"
+            resp = requests.post(endpoint, query)
+            newJson = resp.json()
+            for nodeId in newJson["vertices"]:
+                if newJson["vertices"][nodeId]["type"] == "Wallet" and newJson["vertices"][nodeId]["properties"]["address"] not in ans.union(new).union(new2):
+                    new2.add(newJson["vertices"][nodeId]["properties"]["address"])
+        new = new2
+    return json.dumps(list(ans))
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
