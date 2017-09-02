@@ -2,6 +2,7 @@
 var depUniqueId = 0;
 var dependancies = {};
 var graph;
+var clickedNode;
 
 //JQuery Event handlers
 $("#submit_address").submit(function(e){
@@ -19,6 +20,22 @@ $("#submit_address").submit(function(e){
   });
   e.preventDefault();
 });
+
+function detectEntity(d){
+    d3.json("get_entity?root="+d.address, function(error, ans){
+      for(var nodeId in graph.nodes){
+        var node = graph.nodes[nodeId];
+        node.group = node.group === 5 ? node.oldGroup : node.group;
+        if (node.address && ans.includes(node.address)){
+          node.oldGroup=node.group;
+          node.group=5;
+          console.log(node.address);
+        }
+      }
+      console.log(ans)
+      render();
+    });
+}
 
 // Modifies Graph so that each node is dependant on dependantOn
 function calculateDependencies(graph, dependantOn){
@@ -41,7 +58,7 @@ function calculateDependencies(graph, dependantOn){
 }
 
 //Handle adding nodes
-function handleDblClick(d){
+function expandNode(d){
 
   depId = d["dependencyId"];
 
@@ -204,6 +221,10 @@ var simulation = d3.forceSimulation()
   .append("svg:path")
   .attr("d", "M0,-5L10,0L0,5");
 
+
+
+
+
   //D3 render
   function render() {
 
@@ -222,6 +243,9 @@ var simulation = d3.forceSimulation()
 
     node = svg.selectAll(".node")
       .data(graph.nodes);
+
+    node.select("circle")
+      .attr("fill", function(d) { return d.group === 5 ? "#000" : color(d.group) });
 
     node.exit().remove();
 
@@ -244,27 +268,24 @@ var simulation = d3.forceSimulation()
       .text(function(d) { return d.type === "wallet" ? d.address : d.hash; });
     newNodes
       .on('dblclick', function(d, i){
-        if(d.type === "transaction"){
-          let  id = d.hash;
-          //some ajax call
-        }
         if(d.type === "wallet"){
           let  id = d.address;
           //some ajax call
-          handleDblClick(d);
+          expandNode(d);
         }
       });
     newNodes
       .on('mouseover', hoverNode)
       .on('mouseout', unhoverItem);
 
-    newNodes.on('click', function(d){
-      if (d.type === "transaction"){
-        sendToClipboard(d.hash);
-      }
-      if (d.type === "wallet") {
-        //sendToClipboard(d.address);
-      }
+    newNodes.on('contextmenu', function(d){
+      d3.event.preventDefault();
+      clickedNode = d;
+
+      div.style("opacity", 0.9);
+      div.html($(".context-menu").html()+"<br/>")                               
+           .style("left", (d3.event.pageX) + "px")                                 
+           .style("top", (d3.event.pageY - 28) + "px");     
     });
 
     node = svg.selectAll(".node");
@@ -304,3 +325,13 @@ function dragended(d) {
   d.fx = null;
   d.fy = null;
 }
+
+var div = d3.select("body").append("div")                                       
+   .attr("class", "tooltip")                                                       
+   .style("opacity", 0); 
+
+d3.select("body")
+        .on("click", function(){
+          d3.select(".tooltip").style("opacity", "0");
+        });
+
