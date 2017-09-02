@@ -140,7 +140,7 @@ def get_json():
     
 @app.route("/get_entity")
 def get_entity():
-    entity_curious = request.args.get("entity")
+    entity_curious = request.args.get("root")
     ans = set()
     new = set([entity_curious])
     endpoint = "http://localhost:8000/query"
