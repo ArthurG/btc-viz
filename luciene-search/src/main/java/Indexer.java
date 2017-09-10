@@ -4,6 +4,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Writer;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 
@@ -88,5 +89,6 @@ public class Indexer {
 		idxr.createIndex(inLoc, "RECEIEVED");
 		idxr.createIndex(outLoc, "SENT");
 		System.out.println("Spot 3");
+		idxr.close();
 	}
 }
