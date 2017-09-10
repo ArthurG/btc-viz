@@ -1,17 +1,14 @@
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Writer;
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.LongPoint;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriter;
@@ -22,21 +19,25 @@ import org.apache.lucene.store.FSDirectory;
 public class Indexer {
 
 	private IndexWriter writer;
+	Directory indexDirectory;
 
 	public Indexer(String indexDirectoryPath) throws IOException {
 		// this directory will contain the indexes
-		Path path = FileSystems.getDefault().getPath(indexDirectoryPath, "LucieneIdx.luc");
-		Directory indexDirectory = FSDirectory.open(path);
+		Path path = Paths.get(indexDirectoryPath);
+		indexDirectory = FSDirectory.open(path);
 
 		// create the indexer
-		writer = new IndexWriter(indexDirectory, new IndexWriterConfig(new StandardAnalyzer()));
+		IndexWriterConfig config = new IndexWriterConfig(new StandardAnalyzer());
+		config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+		writer = new IndexWriter(indexDirectory, config);
 	}
 
 	public void close() throws CorruptIndexException, IOException {
 		writer.close();
+		indexDirectory.close();
 	}
 
-	private Document addTx(String txHash, String walletId, long txAmount, String txType) throws IOException {
+	public static Document makeTx(String txHash, String walletId, long txAmount, String txType) throws IOException {
 		Document document = new Document();
 
 		// index transaction hash
@@ -46,9 +47,9 @@ public class Indexer {
 		Field walletField = new StringField(LuceneConstants.WalletId, walletId, Field.Store.YES);
 
 		// index transaction amount
-		Field txAmountField = new LongPoint(LuceneConstants.TxAmount, txAmount);
+		Field txAmountField = new StoredField(LuceneConstants.TxAmount, txAmount);
 
-		Field txTypeField = new StringField(LuceneConstants.TxType, txType, Field.Store.NO);
+		Field txTypeField = new StoredField(LuceneConstants.TxType, txType);
 
 		document.add(transactionId);
 		document.add(walletField);
@@ -65,12 +66,13 @@ public class Indexer {
 			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(inLoc), "UTF-8"));
 
 			String line;
+			boolean first = true;
 			while ((line = br.readLine()) != null) {
 				String[] items = line.split(",");
 				if (items.length > 3) {
 					continue;
 				}
-				Document doc = this.addTx(items[0], items[1], Long.parseLong(items[2]), txType);
+				Document doc = makeTx(items[0], items[1], Long.parseLong(items[2]), txType);
 				writer.addDocument(doc);
 			}
 			br.close();
@@ -84,7 +86,7 @@ public class Indexer {
 		System.out.println("Spot 1");
 		String inLoc = "/mnt/3TB/btc_transaction_in.csv";
 		String outLoc = "/mnt/3TB/btc_transaction_out.csv";
-		Indexer idxr = new Indexer("/mnt/3tb/");
+		Indexer idxr = new Indexer("/mnt/3TB/LucieneIdx");
 		System.out.println("Spot 2");
 		idxr.createIndex(inLoc, "RECEIEVED");
 		idxr.createIndex(outLoc, "SENT");
